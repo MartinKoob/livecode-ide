@@ -50,7 +50,7 @@ command revInternal__LoadLibrary pLibrary, pFullPath
       write ("Error" && tError && "while loading stack:" && pLibrary) \
             & return to stderr
       return "Error loading" && pLibrary
-   end if
+   end if            
    
    put tStackName into sLoadedLibraries[pLibrary]
    return empty
@@ -175,3 +175,7 @@ command revInternal_SetCLASSPATH
    
    put tClasspath into $CLASSPATH
 end revInternal_SetCLASSPATH
+
+function revInternal__LoadedLibraryStackName pLibraryName
+   return sLoadedLibraries[pLibraryName]
+end revInternal__LoadedLibraryStackName
