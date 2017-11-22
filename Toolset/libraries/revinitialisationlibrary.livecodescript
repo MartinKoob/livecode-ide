@@ -29,22 +29,17 @@ command revInternal__LoadLibrary pLibrary, pFullPath
       return "no stack for library" && pLibrary
    end if
    
-   local tError, tLegacyError
+   local tError, tLegacyError     
    try
-      // TODO: Remove legacy message name	   
-      dispatch "revLoadLibrary" to stack tStackName  
+      dispatch "extensionInitialize" to stack tStackName 
       if it is not "handled" then
-      	throw "No revLoadLibrary handler found"
-      end if
-   catch tLegacyError 
-   end try 
-   
-   if tLegacyError is not empty then
-      try
-         send "extensionInitialize" to stack tStackName   
-      catch tError
-      end try
-   end if
+         dispatch "revLoadLibrary" to stack tStackName  
+         if it is not "handled" then
+            throw "No extensionInitialize handler found"
+         end if
+      end if  
+   catch tError
+   end try
    
    if tError is not empty then
       write ("Error" && tError && "while loading stack:" && pLibrary) \
