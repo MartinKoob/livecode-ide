@@ -10936,16 +10936,23 @@ private function revIDEGetExtensionDocsData pAPI
          if tExtensionData["source_type"] is "lcb" then
             dispatch function "revDocsGenerateDocsFileFromModularFile" to stack "revDocsParser" with \
                   tFolder & slash & tSource
+            put the result into tDoc
          else if tExtensionData["source_type"] is "lcs" then
             local tStack
             put the long id of stack (tFolder & slash & tSource) into tStack
-            dispatch function "revDocsGenerateDocsFileFromText" to stack "revDocsParser" with \
+            try
+               dispatch function "revDocsGenerateDocsFileFromText" \
+                  to stack "revDocsParser" with \
                   the script of tStack, tStack
+               put the result into tDoc
+            catch tError
+               -- Stack might be password protected
+            end try
          end if
-         put the result into tDoc
-         
-         # Output the lcdoc file
-         revIDESetUTF8FileContents tAPIDoc, tDoc
+         if tDoc is not empty then
+            # Output the lcdoc file
+		    revIDESetUTF8FileContents tAPIDoc, tDoc
+         end if
       end if
       
       local tAPIJS
@@ -11296,10 +11303,17 @@ private command revIDEGenerateDistributedAPI
       put the stackfiles of stack "home" into tIDELibs
       split tIDELibs by return and comma
       repeat for each key tStackName in tIDELibs
-         get revDocsGenerateDocsFileFromText(the script of stack tStackName, \
-               the long id of stack tStackName)
-         if it is not empty then
-            put it into tIDEA[tIDECount]
+         local tStack, tDoc
+         put the long id of stack tStackName into tStack
+         try
+            put revDocsGenerateDocsFileFromText(the script of tStack, \
+               tStack) into tDoc
+         catch tError
+               -- Stack might be password protected
+               next repeat
+         end try
+         if tDoc is not empty then
+            put tDoc into tIDEA[tIDECount]
             add 1 to tIDECount
          end if
       end repeat
